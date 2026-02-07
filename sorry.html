@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>For You | I'm Sorry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Inter:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --primary: #fb7185; }
+        body { font-family: 'Inter', sans-serif; background: #0f172a; color: white; overflow: hidden; touch-action: manipulation; }
+        .handwritten { font-family: 'Dancing Script', cursive; }
+        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(15px); border: 1px solid rgba(255, 255, 255, 0.1); }
+        .photo-card { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); background: white; padding: 12px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        #no-btn { position: relative; transition: all 0.2s ease; z-index: 20; }
+        .star { position: absolute; background: white; border-radius: 50%; opacity: 0.5; }
+        * { -webkit-tap-highlight-color: transparent; user-select: none; }
+        
+        #pin-overlay { position: fixed; inset: 0; background: #0f172a; z-index: 999; display: flex; align-items: center; justify-content: center; transition: opacity 0.8s ease; }
+    </style>
+</head>
+<body class="overflow-hidden">
+
+    <div id="pin-overlay">
+        <div class="glass p-10 rounded-[2.5rem] text-center max-w-xs w-full">
+            <div class="text-5xl mb-6">🔒</div>
+            <h2 class="text-2xl font-bold mb-4">Enter Secret PIN</h2>
+            <p class="text-xs text-slate-400 mb-6 uppercase tracking-widest">A date special to us</p>
+            <input type="password" id="pin-input" maxlength="4" placeholder="••••" 
+                class="bg-white/10 border-2 border-rose-500/30 rounded-xl py-3 w-full text-center text-3xl tracking-[1em] focus:outline-none focus:border-rose-500 transition-all text-white">
+            <p id="pin-error" class="text-rose-500 text-xs mt-4 opacity-0">Incorrect PIN. Try again? ❤️</p>
+        </div>
+    </div>
+
+    <div id="main-content" class="opacity-0">
+        <div class="fixed right-4 top-1/2 -translate-y-1/2 w-1.5 h-32 bg-white/10 rounded-full z-50">
+            <div id="meter-fill" class="absolute bottom-0 w-full bg-rose-500 rounded-full" style="height: 0%;"></div>
+        </div>
+
+        <div id="star-container" class="fixed inset-0 pointer-events-none"></div>
+
+        <section class="h-screen flex flex-col items-center justify-center text-center p-4">
+            <div id="hero-heart" class="text-8xl mb-6">❤️</div>
+            <h1 class="text-5xl font-bold text-rose-400 mb-4 handwritten">For my beautiful girl,</h1>
+            <p class="text-sm text-slate-400 opacity-0 tracking-[0.3em] uppercase" id="sub-text">Scroll to begin</p>
+        </section>
+
+        <section class="min-h-screen flex items-center justify-center p-4">
+            <div class="max-w-md w-full glass p-10 rounded-[2.5rem] reveal">
+                <div class="text-slate-200 leading-relaxed text-xl min-h-[220px] font-light italic">
+                    <span id="typed-text"></span>
+                </div>
+            </div>
+        </section>
+
+        <section class="min-h-screen p-4 flex flex-col items-center py-20">
+            <h2 class="text-4xl handwritten text-rose-400 mb-16 reveal">Moments I Treasure</h2>
+            <div class="flex flex-col items-center gap-16 w-full max-w-sm">
+                <div class="photo-card rotate-3 w-full reveal"><img src="https://roson00.github.io/my-picture/IMG_0873.jpeg" class="w-full h-80 object-cover"></div>
+                <div class="photo-card -rotate-3 w-full reveal"><img src="https://roson00.github.io/my-picture/photo2.jpg" class="w-full h-80 object-cover"></div>
+                <div class="photo-card rotate-1 w-full reveal"><img src="https://roson00.github.io/my-picture/IMG_4440.jpeg" class="w-full h-80 object-cover"></div>
+            </div>
+        </section>
+
+        <section class="h-screen flex flex-col items-center justify-center p-4 space-y-12">
+            <h2 class="text-5xl handwritten text-rose-400 reveal text-center">Will you forgive me?</h2>
+            <div class="flex flex-col gap-6 w-full max-w-xs z-10">
+                <button onclick="forgiven()" class="bg-rose-500 text-white py-5 rounded-full text-2xl font-bold shadow-lg active:scale-90">Yes, I forgive you</button>
+                <button id="no-btn" onmouseenter="moveButton()" onclick="moveButton()" ontouchstart="moveButton()" class="border-2 border-slate-700 text-slate-500 py-4 rounded-full text-xl">No</button>
+            </div>
+        </section>
+
+        <div id="success-msg" class="hidden fixed inset-0 bg-slate-950/95 flex items-center justify-center z-[100] p-6 text-center">
+            <div class="glass p-12 rounded-[3rem]">
+                <div class="text-8xl mb-6">🥰</div>
+                <h3 class="text-4xl font-bold text-rose-400 handwritten mb-4">I love you so much!</h3>
+                <p class="text-slate-400">Everything is better when we're okay.</p>
+                <button onclick="location.reload()" class="mt-8 text-xs text-rose-500 font-bold underline">Replay</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CORRECT_PIN = "1234"; // Update this to your special PIN
+
+        // Authentication logic
+        document.getElementById('pin-input').addEventListener('input', (e) => {
+            if (e.target.value === CORRECT_PIN) {
+                gsap.to("#pin-overlay", { opacity: 0, duration: 1, onComplete: () => {
+                    document.getElementById('pin-overlay').style.display = "none";
+                    document.body.style.overflow = "auto";
+                    document.getElementById('main-content').style.opacity = "1";
+                    initAnimations();
+                }});
+            } else if (e.target.value.length === 4) {
+                gsap.to("#pin-error", { opacity: 1, duration: 0.3 });
+                setTimeout(() => { 
+                    e.target.value = ""; 
+                    gsap.to("#pin-error", { opacity: 0, duration: 0.3 });
+                }, 1000);
+            }
+        });
+
+        function initAnimations() {
+            gsap.registerPlugin(ScrollTrigger);
+            gsap.to("#meter-fill", { height: "100%", scrollTrigger: { trigger: "body", start: "top top", end: "bottom bottom", scrub: 0.3 }});
+            gsap.to("#hero-heart", { scale: 1.15, repeat: -1, yoyo: true, duration: 0.6 });
+            gsap.to("#sub-text", { opacity: 1, y: -10, delay: 0.5, duration: 1 });
+            gsap.utils.toArray(".reveal").forEach(el => { gsap.from(el, { scrollTrigger: { trigger: el, start: "top 90%" }, opacity: 0, y: 50, duration: 1.2 });});
+            new Typed('#typed-text', { strings: ["I know I messed up...^1000", "I hate that I hurt you.^1000", "You mean the world to me.^1000", "I am truly sorry. ❤️"], typeSpeed: 60, backSpeed: 30, cursorChar: '❤' });
+        }
+
+        // Particle background logic
+        const container = document.getElementById('star-container');
+        for (let i = 0; i < 100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.width = star.style.height = `${Math.random() * 3}px`;
+            star.style.left = `${Math.random() * 100}%`;
+            star.style.top = `${Math.random() * 100}%`;
+            container.appendChild(star);
+            gsap.to(star, { opacity: Math.random(), duration: Math.random() * 3 + 2, repeat: -1, yoyo: true });
+        }
+
+        function moveButton() {
+            const btn = document.getElementById('no-btn');
+            const x = Math.random() * (window.innerWidth - btn.offsetWidth - 40);
+            const y = Math.random() * (window.innerHeight - btn.offsetHeight - 40);
+            gsap.to(btn, { position: 'fixed', left: Math.max(20, x), top: Math.max(20, y), duration: 0.4 });
+        }
+
+        function forgiven() {
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#fb7185', '#ffffff'] });
+            document.getElementById('success-msg').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
